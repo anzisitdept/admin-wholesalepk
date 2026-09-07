@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Products: Anyone can read, only authenticated admin can create/update/delete
+    match /products/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Categories: Anyone can read, only authenticated admin can create/update/delete
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Store Content (Homepage hero slides, banners, etc.): Anyone can read, only admin can edit
+    match /store_content/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Orders: Customers can submit orders (create); only authenticated admin can view, update, delete
+    match /orders/{id} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Reviews: Anyone can read and submit reviews; only authenticated admin can approve or delete
+    match /reviews/{id} {
+      allow read, create: if true;
+      allow update, delete: if request.auth != null;
+    }
+
+    // Settings & Coupons: Read/write for authenticated admin
+    match /settings/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /coupons/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

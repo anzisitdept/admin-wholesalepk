@@ -1,0 +1,11 @@
+📋 For your ADMIN project (connect dynamically to add products)
+To make admin-added products appear on this Wholesaler-PK storefront in real time:
+1. Same Firebase project — your admin project must use the same Firebase config keys currently in .env.local (project nisar-ki-achar). Don't create a new project.
+2. Products collection — admins add products to the products collection in Firestore. The storefront subscribes live (real-time) so products appear instantly on refresh. Required fields:
+- name, slug (unique), price, originalPrice, image / images[], weights[], weightPrices{}
+- category / categoryId — still used internally to pick which product carousel a product shows in (Best Sellers, New Arrivals, etc.)
+- inStock: true
+3. Category assignment — keep the category field on products in admin (that's the from which category to be showing reference). Category data model was not deleted — only the user-facing homepage category carousel was removed.
+4. store_content/homepage doc — controls Best Sellers / New Arrivals / Bundle Offers / Special Items carousels via productIds. Add your new product's ID there to feature it.
+5. No schema changes needed — everything else (cart, checkout, orders, admin orders) stays as-is.
+Your storefront and admin must share one Firebase project — that's the single most important thing for real-time product display.
