@@ -26,8 +26,8 @@ export default function OrderReceipt({ order }: { order: Order }) {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div>
-            <h2 style={{ fontSize: "1.4rem", fontWeight: 900, color: "#b45309" }}>🫙 Wholesaler-pk</h2>
-            <p style={{ color: "#666", fontSize: "0.8rem" }}>Premium Desi Pickles & Preserves</p>
+            <h2 style={{ fontSize: "1.4rem", fontWeight: 900, color: "#b45309" }}>🛍️ Wholesaler-pk</h2>
+            <p style={{ color: "#666", fontSize: "0.8rem" }}>Premium Products & Everyday Essentials</p>
           </div>
           <div style={{ textAlign: "right" }}>
             <p style={{ fontWeight: 700, fontSize: "1rem" }}>Order #{order.orderId}</p>
@@ -85,7 +85,7 @@ export default function OrderReceipt({ order }: { order: Order }) {
         </div>
 
         <div style={{ marginTop: 32, textAlign: "center", color: "#999", fontSize: "0.78rem", borderTop: "1px dashed #ddd", paddingTop: 20 }}>
-          Thank you for your order! 🌿 Handcrafted with love.
+          Thank you for your order! 🌿 Quality you can trust.
         </div>
       </div>
       <style>{`@media print { body > *:not(#printable-receipt) { display: none; } }`}</style>

@@ -25,7 +25,7 @@ import toast from "react-hot-toast";
 const DEFAULT_CONTENT: StoreContent = {
   topBarMessages: [
     "🚚 Free delivery on orders over Rs. 2,999 across Pakistan!",
-    "✨ 100% Handcrafted Traditional Mustard Oil Pickles",
+    "✨ 100% Premium Quality Products, Safe & Reliable Packaging",
   ],
   heroSlides: [],
   bestSellers: {
@@ -556,7 +556,7 @@ export default function ContentPage() {
                       className="input"
                       value={slide.link || ""}
                       onChange={(e) => updateSlide(i, "link", e.target.value)}
-                      placeholder="e.g. /collections/all or /products/mango-pickle"
+                      placeholder="e.g. /collections/all or /products/product-name"
                     />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -565,7 +565,7 @@ export default function ContentPage() {
                       className="input"
                       value={slide.alt || ""}
                       onChange={(e) => updateSlide(i, "alt", e.target.value)}
-                      placeholder="e.g. Special Mango Pickle Batch"
+                      placeholder="e.g. Premium Product Banner"
                     />
                   </div>
                 </div>
@@ -772,7 +772,7 @@ export default function ContentPage() {
                         className="input"
                         value={banner.link}
                         onChange={(e) => updateBanner(i, "link", e.target.value)}
-                        placeholder="e.g. /collections/traditional-pickles"
+                        placeholder="e.g. /collections/best-selling"
                       />
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
@@ -781,7 +781,7 @@ export default function ContentPage() {
                         className="input"
                         value={banner.alt}
                         onChange={(e) => updateBanner(i, "alt", e.target.value)}
-                        placeholder="e.g. Seasonal Mango Pickle Festival Banner"
+                        placeholder="e.g. Seasonal Sale Promo Banner"
                       />
                     </div>
                   </div>
@@ -849,7 +849,7 @@ export default function ContentPage() {
             <h3 style={{ fontWeight: 700, fontSize: "1.1rem" }}>7. Special Items</h3>
           </div>
           <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: 20 }}>
-            Highlight limited-time specialties, seasonal harvests, or exclusive recipes in the Special Items section.
+            Highlight limited-time special offers, seasonal deals, or exclusive items in the Special Items section.
           </p>
 
           <div className="form-group" style={{ marginBottom: 18 }}>
@@ -866,7 +866,7 @@ export default function ContentPage() {
                   },
                 }))
               }
-              placeholder="e.g. Special Items & Seasonal Harvest"
+              placeholder="e.g. Special Items & Exclusive Deals"
             />
           </div>
 
