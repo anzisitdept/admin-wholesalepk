@@ -26,12 +26,23 @@ export interface Product {
   subCategory?: string;
   subCategoryName?: string;
 
-  // Universal Wholesale Attributes
+  // Wholesale Attributes
   brand?: string;           // Manufacturer or Brand
   sku?: string;             // Model / SKU / Barcode
-  unit?: string;            // e.g. "Piece", "Box", "Carton", "Pack of 12", "Dozen", "Set", "Kg"
+  unit?: string;            // e.g. "Piece", "Pair", "Set", "Gram"
   moq?: number;             // Minimum Order Quantity (default 1)
   stockQuantity?: number;   // Warehouse inventory count
+
+  // Jewelry-Specific Attributes
+  material?: string;        // e.g. "Gold", "Silver", "Platinum", "Rose Gold"
+  metalPurity?: string;     // e.g. "18K", "22K", "24K", "925 Silver"
+  gemstone?: string;        // e.g. "Diamond", "Ruby", "Emerald", "Pearl"
+  gemstoneQuality?: string; // e.g. "VS1", "VVS2", "AA", "AAA"
+  weightGrams?: number;     // Weight in grams
+  chainLength?: string;     // e.g. "18 inch", "20 inch" for necklaces/bracelets
+  ringSize?: string;        // e.g. "6", "7", "8", "Adjustable"
+  hallmark?: string;        // e.g. "BIS 916", "BIS 750"
+  certification?: string;   // e.g. "IGI Certified", "GIA Certified"
 
   // Pricing
   originalPrice: number;
@@ -50,10 +61,10 @@ export interface Product {
   hoverImage: string;
   images: string[];
 
-  // Universal Variants (replaces niche-specific weight variants)
+  // Variants (e.g. sizes, gemstone options)
   variants?: ProductVariant[];
 
-  // Universal Specifications & Narrative (replaces ingredients & benefits)
+  // Product Content
   description: string;
   highlights?: string[];                   // Key bullet points
   specifications?: ProductSpecification[]; // Dynamic key-value attributes
@@ -166,7 +177,6 @@ export interface StoreContent {
   newArrivals: ProductCuratedSection;
   midBanners: Banner[];
   bundleOffers: ProductCuratedSection;
-  specialItems: ProductCuratedSection;
 }
 
 export interface DashboardStats {

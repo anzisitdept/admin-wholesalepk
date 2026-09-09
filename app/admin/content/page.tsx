@@ -17,7 +17,6 @@ import {
   Sparkles,
   Image as ImageIcon,
   Gift,
-  Star,
   CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -39,10 +38,6 @@ const DEFAULT_CONTENT: StoreContent = {
   midBanners: [],
   bundleOffers: {
     title: "Bundle Offers & Deals",
-    productIds: [],
-  },
-  specialItems: {
-    title: "Special Items & Seasonal Delights",
     productIds: [],
   },
 };
@@ -80,10 +75,6 @@ export default function ContentPage() {
             bundleOffers: {
               title: storeContent.bundleOffers?.title || "Bundle Offers & Deals",
               productIds: storeContent.bundleOffers?.productIds || [],
-            },
-            specialItems: {
-              title: storeContent.specialItems?.title || "Special Items & Seasonal Delights",
-              productIds: storeContent.specialItems?.productIds || [],
             },
           });
         }
@@ -231,7 +222,6 @@ export default function ContentPage() {
     { id: "newarrivals", label: "4. New Arrivals", icon: Sparkles },
     { id: "banners", label: "5. Mid Banners", icon: ImageIcon },
     { id: "bundles", label: "6. Bundle Offers", icon: Gift },
-    { id: "special", label: "7. Special Items", icon: Star },
   ];
 
   const scrollToSection = (id: string) => {
@@ -269,7 +259,7 @@ export default function ContentPage() {
       >
         <div>
           <h2 className="page-title">Homepage Customizer & Content</h2>
-          <p className="page-subtitle">Configure, order, and customize all 8 storefront homepage sections</p>
+          <p className="page-subtitle">Configure, order, and customize all 7 storefront homepage sections</p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: "10px 24px" }}>
@@ -840,52 +830,6 @@ export default function ContentPage() {
           />
         </div>
 
-        {/* ============================================================
-            7. SPECIAL ITEMS
-           ============================================================ */}
-        <div id="section-special" className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Star size={20} color="var(--accent)" />
-            <h3 style={{ fontWeight: 700, fontSize: "1.1rem" }}>7. Special Items</h3>
-          </div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: 20 }}>
-            Highlight limited-time special offers, seasonal deals, or exclusive items in the Special Items section.
-          </p>
-
-          <div className="form-group" style={{ marginBottom: 18 }}>
-            <label className="label">Section Heading / Title</label>
-            <input
-              className="input"
-              value={content.specialItems?.title || ""}
-              onChange={(e) =>
-                setContent((c) => ({
-                  ...c,
-                  specialItems: {
-                    ...c.specialItems,
-                    title: e.target.value,
-                  },
-                }))
-              }
-              placeholder="e.g. Special Items & Exclusive Deals"
-            />
-          </div>
-
-          <ProductPicker
-            sectionName="Special Items"
-            products={products}
-            selectedIds={content.specialItems?.productIds || []}
-            onChange={(ids) =>
-              setContent((c) => ({
-                ...c,
-                specialItems: {
-                  ...c.specialItems,
-                  productIds: ids,
-                },
-              }))
-            }
-          />
-        </div>
-
         {/* Floating Bottom Save Bar */}
         <div
           style={{
@@ -902,7 +846,7 @@ export default function ContentPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <CheckCircle2 size={20} color="var(--green)" />
             <span style={{ fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: 500 }}>
-              All 7 homepage sections will sync directly to Firestore under <code>store_content/homepage</code>
+              All 6 homepage sections will sync directly to Firestore under <code>store_content/homepage</code>
             </span>
           </div>
           <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: "10px 28px" }}>

@@ -20,12 +20,13 @@ import {
   Check,
   Building2,
   Barcode,
+  Gem,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Product, Category, ProductVariant, ProductSpecification } from "@/types/admin";
 
-const COMMON_UNITS = ["Piece", "Box", "Pack of 12", "Carton", "Dozen", "Set", "Pair", "Kg", "Meter"];
-const COMMON_SPEC_KEYS = ["Brand", "Material", "Dimensions", "Warranty", "Origin", "Color", "Model", "Packaging"];
+const COMMON_UNITS = ["Piece", "Pair", "Set", "Gram", "Carat", "Box", "Dozen"];
+const COMMON_SPEC_KEYS = ["Material", "Purity", "Gemstone", "Gem Weight", "Origin", "Hallmark", "Certification", "Chain Length", "Ring Size", "Plating", "Finish", "Occasion"];
 
 function slugify(text: string): string {
   return text
@@ -49,6 +50,15 @@ const EMPTY: Omit<Product, "id"> = {
   unit: "Piece",
   moq: 1,
   stockQuantity: 0,
+  material: "",
+  metalPurity: "",
+  gemstone: "",
+  gemstoneQuality: "",
+  weightGrams: 0,
+  chainLength: "",
+  ringSize: "",
+  hallmark: "",
+  certification: "",
   originalPrice: 0,
   price: 0,
   wholesalePrice: 0,
@@ -117,6 +127,15 @@ export default function ProductForm({ productId, initialData }: Props) {
     stockQuantity: initialData?.stockQuantity ?? 0,
     wholesalePrice: initialData?.wholesalePrice ?? 0,
     showInAllProducts: initialData?.showInAllProducts !== undefined ? initialData.showInAllProducts : true,
+    material: initialData?.material || "",
+    metalPurity: initialData?.metalPurity || "",
+    gemstone: initialData?.gemstone || "",
+    gemstoneQuality: initialData?.gemstoneQuality || "",
+    weightGrams: initialData?.weightGrams ?? 0,
+    chainLength: initialData?.chainLength || "",
+    ringSize: initialData?.ringSize || "",
+    hallmark: initialData?.hallmark || "",
+    certification: initialData?.certification || "",
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -292,8 +311,8 @@ export default function ProductForm({ productId, initialData }: Props) {
             <ArrowLeft size={16} />
           </a>
           <div>
-            <h2 className="page-title">{productId ? "Edit Wholesale Product" : "New Wholesale Product"}</h2>
-            <p className="page-subtitle">Universal multi-category product catalog management</p>
+            <h2 className="page-title">{productId ? "Edit Jewelry Piece" : "Add New Jewelry Piece"}</h2>
+            <p className="page-subtitle">Wholesale jewelry catalog management</p>
           </div>
         </div>
         <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: "10px 24px" }}>
@@ -326,7 +345,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                   set("name", val);
                   if (autoSlug) set("slug", slugify(val));
                 }}
-                placeholder="e.g. Heavy Duty Stainless Steel Cookware Set"
+                placeholder="e.g. 22K Gold Diamond Pendant Necklace"
               />
             </div>
 
@@ -338,7 +357,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                   style={{ direction: "rtl" }}
                   value={form.urduName}
                   onChange={(e) => set("urduName", e.target.value)}
-                  placeholder="مثال: سٹینلیس سٹیل کوک ویئر سیٹ"
+                  placeholder="مثال: 22 کیرٹ گولڈ ڈائمنڈ پینڈنٹ نیکلیس"
                 />
               </div>
 
@@ -373,7 +392,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     setAutoSlug(false);
                     set("slug", slugify(e.target.value));
                   }}
-                  placeholder="heavy-duty-stainless-steel-cookware"
+                  placeholder="22k-gold-diamond-pendant-necklace"
                 />
               </div>
             </div>
@@ -498,7 +517,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.category}
                       onChange={(e) => set("category", e.target.value)}
-                      placeholder="e.g. kitchen-appliances"
+                      placeholder="e.g. gold-jewelry"
                     />
                   </div>
                   <div className="form-group">
@@ -507,7 +526,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.categoryName}
                       onChange={(e) => set("categoryName", e.target.value)}
-                      placeholder="e.g. Kitchen Appliances"
+                      placeholder="e.g. Gold Jewelry"
                     />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -516,7 +535,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.subCategory || ""}
                       onChange={(e) => set("subCategory", e.target.value)}
-                      placeholder="e.g. cookware"
+                      placeholder="e.g. necklaces"
                     />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -525,7 +544,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.subCategoryName || ""}
                       onChange={(e) => set("subCategoryName", e.target.value)}
-                      placeholder="e.g. Cookware & Pots"
+                      placeholder="e.g. Necklaces & Pendants"
                     />
                   </div>
                 </div>
@@ -559,6 +578,275 @@ export default function ProductForm({ productId, initialData }: Props) {
             </div>
           </div>
 
+          {/* Jewelry Details Card */}
+          <div className="card">
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+              <Gem size={20} color="var(--accent)" />
+              <h3 style={{ fontWeight: 700 }}>Jewelry Details</h3>
+            </div>
+
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="label">Metal / Material</label>
+                <input
+                  className="input"
+                  value={form.material || ""}
+                  onChange={(e) => set("material", e.target.value)}
+                  placeholder="e.g. Gold, Silver, Platinum, Rose Gold"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["Gold", "Silver", "Platinum", "Rose Gold", "Bronze", "Copper"].map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => set("material", m)}
+                      style={{
+                        background: form.material === m ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: form.material === m ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${form.material === m ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="label">Metal Purity / Karat</label>
+                <input
+                  className="input"
+                  value={form.metalPurity || ""}
+                  onChange={(e) => set("metalPurity", e.target.value)}
+                  placeholder="e.g. 18K, 22K, 24K, 925 Silver"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["18K", "22K", "24K", "925 Silver", "950 Platinum"].map(p => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => set("metalPurity", p)}
+                      style={{
+                        background: form.metalPurity === p ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: form.metalPurity === p ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${form.metalPurity === p ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid-2" style={{ marginTop: 8 }}>
+              <div className="form-group">
+                <label className="label">Gemstone</label>
+                <input
+                  className="input"
+                  value={form.gemstone || ""}
+                  onChange={(e) => set("gemstone", e.target.value)}
+                  placeholder="e.g. Diamond, Ruby, Emerald, Pearl"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["Diamond", "Ruby", "Emerald", "Sapphire", "Pearl", "Topaz", "None"].map(g => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => set("gemstone", g === "None" ? "" : g)}
+                      style={{
+                        background: (form.gemstone === g || (g === "None" && !form.gemstone)) ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: (form.gemstone === g || (g === "None" && !form.gemstone)) ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${(form.gemstone === g || (g === "None" && !form.gemstone)) ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="label">Gemstone Quality / Grade</label>
+                <input
+                  className="input"
+                  value={form.gemstoneQuality || ""}
+                  onChange={(e) => set("gemstoneQuality", e.target.value)}
+                  placeholder="e.g. VS1, VVS2, AA, AAA"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["VS1", "VS2", "VVS1", "VVS2", "SI1", "AA", "AAA", "AAAA"].map(q => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => set("gemstoneQuality", q)}
+                      style={{
+                        background: form.gemstoneQuality === q ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: form.gemstoneQuality === q ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${form.gemstoneQuality === q ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid-3" style={{ marginTop: 8 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="label">Weight (Grams)</label>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.weightGrams || ""}
+                  onChange={(e) => set("weightGrams", Number(e.target.value))}
+                  placeholder="e.g. 5.5"
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="label">Chain Length</label>
+                <input
+                  className="input"
+                  value={form.chainLength || ""}
+                  onChange={(e) => set("chainLength", e.target.value)}
+                  placeholder="e.g. 18 inch, 20 inch"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["16 inch", "18 inch", "20 inch", "22 inch", "Adjustable"].map(l => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => set("chainLength", l)}
+                      style={{
+                        background: form.chainLength === l ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: form.chainLength === l ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${form.chainLength === l ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="label">Ring Size</label>
+                <input
+                  className="input"
+                  value={form.ringSize || ""}
+                  onChange={(e) => set("ringSize", e.target.value)}
+                  placeholder="e.g. 6, 7, 8, Adjustable"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["5", "6", "7", "8", "9", "10", "Adjustable"].map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => set("ringSize", s)}
+                      style={{
+                        background: form.ringSize === s ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: form.ringSize === s ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${form.ringSize === s ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid-2" style={{ marginTop: 8 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="label">Hallmark</label>
+                <input
+                  className="input"
+                  value={form.hallmark || ""}
+                  onChange={(e) => set("hallmark", e.target.value)}
+                  placeholder="e.g. BIS 916, BIS 750, Hallmarked"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["BIS 916", "BIS 750", "BIS 999", "Hallmarked", "SIS Hallmark"].map(h => (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => set("hallmark", h)}
+                      style={{
+                        background: form.hallmark === h ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: form.hallmark === h ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${form.hallmark === h ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {h}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="label">Certification</label>
+                <input
+                  className="input"
+                  value={form.certification || ""}
+                  onChange={(e) => set("certification", e.target.value)}
+                  placeholder="e.g. IGI Certified, GIA Certified"
+                />
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  {["IGI Certified", "GIA Certified", "SGL Certified", "BIS Certified", "None"].map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => set("certification", c === "None" ? "" : c)}
+                      style={{
+                        background: (form.certification === c || (c === "None" && !form.certification)) ? "var(--accent-glow)" : "var(--bg-elevated)",
+                        color: (form.certification === c || (c === "None" && !form.certification)) ? "var(--accent)" : "var(--text-secondary)",
+                        border: `1px solid ${(form.certification === c || (c === "None" && !form.certification)) ? "var(--accent)" : "var(--border)"}`,
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Wholesale & Inventory Specifications */}
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
@@ -576,7 +864,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     style={{ paddingLeft: 36 }}
                     value={form.sku || ""}
                     onChange={(e) => set("sku", e.target.value)}
-                    placeholder="e.g. WH-CKW-992"
+                    placeholder="e.g. JLW-GLD-916"
                   />
                 </div>
               </div>
@@ -590,7 +878,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     style={{ paddingLeft: 36 }}
                     value={form.brand || ""}
                     onChange={(e) => set("brand", e.target.value)}
-                    placeholder="e.g. Master Chef / Anzi Wholesale"
+                    placeholder="e.g. M. Arif Jewelers / Anzi Jewels"
                   />
                 </div>
               </div>
@@ -603,7 +891,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                 className="input"
                 value={form.unit || "Piece"}
                 onChange={(e) => set("unit", e.target.value)}
-                placeholder="e.g. Piece, Carton, Pack of 12, Box, Dozen, Kg"
+                placeholder="e.g. Piece, Pair, Set, Gram, Carat"
               />
               <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 {COMMON_UNITS.map((u) => (
@@ -723,9 +1011,9 @@ export default function ProductForm({ productId, initialData }: Props) {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <SlidersHorizontal size={20} color="var(--accent)" />
                 <div>
-                  <h3 style={{ fontWeight: 700 }}>Universal Options &amp; Variants</h3>
+                  <h3 style={{ fontWeight: 700 }}>Options &amp; Variants</h3>
                   <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>
-                    Sizes, Colors, Dimensions, Storage, or Packs (works for any category)
+                    Ring Sizes, Chain Lengths, Gemstone Variants, or Metal Options
                   </p>
                 </div>
               </div>
@@ -749,7 +1037,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                   <label className="label" style={{ fontSize: "0.72rem" }}>Option / Variant Name</label>
                   <input
                     className="input"
-                    placeholder="e.g. Large, 128GB, Red, Pack of 24, 1Kg"
+                    placeholder="e.g. Gold, Diamond, Emerald, Large, Adjustable, 7"
                     value={newVarName}
                     onChange={(e) => setNewVarName(e.target.value)}
                   />
@@ -995,7 +1283,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                 rows={5}
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
-                placeholder="Comprehensive description of the product, manufacturing quality, wholesale packaging, application and features…"
+                placeholder="Comprehensive description of the jewelry piece, metal quality, gemstone details, craftsmanship, wholesale packaging, and hallmark information..."
               />
             </div>
 
@@ -1014,7 +1302,7 @@ export default function ProductForm({ productId, initialData }: Props) {
               <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                 <input
                   className="input"
-                  placeholder="e.g. 100% Rust-proof 304 Grade Stainless Steel"
+                  placeholder="e.g. 100% Hallmarked 22K Gold, Polished & Fine Finished"
                   value={newHighlight}
                   onChange={(e) => setNewHighlight(e.target.value)}
                   onKeyDown={(e) => {
@@ -1082,7 +1370,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     Specifications &amp; Custom Attributes
                   </label>
                   <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                    Key-Value pairs for any niche (Material, Warranty, Origin, Dimensions, etc.)
+                    Key-Value pairs for jewelry specs (Material, Purity, Gemstone, Certification, etc.)
                   </p>
                 </div>
               </div>
@@ -1121,7 +1409,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                 <input
                   className="input"
                   style={{ flex: "2 1 180px" }}
-                  placeholder="Value (e.g. Heavy Duty Brass)"
+                  placeholder="Value (e.g. 22 Karat, 2.5 Carat)"
                   value={newSpecVal}
                   onChange={(e) => setNewSpecVal(e.target.value)}
                   onKeyDown={(e) => {
