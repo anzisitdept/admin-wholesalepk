@@ -33,8 +33,8 @@ export interface Product {
   moq?: number;             // Minimum Order Quantity (default 1)
   stockQuantity?: number;   // Warehouse inventory count
 
-  // Jewelry-Specific Attributes
-  material?: string;        // e.g. "Gold", "Silver", "Platinum", "Rose Gold"
+  // Product-Specific Attributes
+  material?: string;        // e.g. "Gold", "Silver", "Platinum", "Rose Gold", "Stainless Steel"
   metalPurity?: string;     // e.g. "18K", "22K", "24K", "925 Silver"
   gemstone?: string;        // e.g. "Diamond", "Ruby", "Emerald", "Pearl"
   gemstoneQuality?: string; // e.g. "VS1", "VVS2", "AA", "AAA"
@@ -43,6 +43,8 @@ export interface Product {
   ringSize?: string;        // e.g. "6", "7", "8", "Adjustable"
   hallmark?: string;        // e.g. "BIS 916", "BIS 750"
   certification?: string;   // e.g. "IGI Certified", "GIA Certified"
+  shortDescription?: string; // Subtitle text for horizontal cards & popup overlay
+  specialInstructionsNote?: string; // Customer instructions prompt
 
   // Pricing
   originalPrice: number;

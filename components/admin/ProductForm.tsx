@@ -24,9 +24,11 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Product, Category, ProductVariant, ProductSpecification } from "@/types/admin";
+import { ADMIN_COLLECTIONS } from "@/lib/adminCollections";
+import type { CategoryOption } from "@/lib/adminCollections";
 
-const COMMON_UNITS = ["Piece", "Pair", "Set", "Gram", "Carat", "Box", "Dozen"];
-const COMMON_SPEC_KEYS = ["Material", "Purity", "Gemstone", "Gem Weight", "Origin", "Hallmark", "Certification", "Chain Length", "Ring Size", "Plating", "Finish", "Occasion"];
+const COMMON_UNITS = ["Piece", "Pair", "Set", "Gram", "Box", "Dozen", "Pack", "Kg", "Litre"];
+const COMMON_SPEC_KEYS = ["Material", "Purity", "Weight", "Dimensions", "Warranty", "Brand", "Model", "Color", "Size", "Origin", "Certification", "Finish", "Occasion"];
 
 function slugify(text: string): string {
   return text
@@ -72,6 +74,7 @@ const EMPTY: Omit<Product, "id"> = {
   images: [],
   variants: [],
   description: "",
+  shortDescription: "",
   highlights: [],
   specifications: [],
   rating: 5,
@@ -122,6 +125,7 @@ export default function ProductForm({ productId, initialData }: Props) {
     variants: initialVariants,
     specifications: initialSpecs,
     highlights: initialData?.highlights || [],
+    shortDescription: initialData?.shortDescription || "",
     unit: initialData?.unit || "Piece",
     moq: initialData?.moq ?? 1,
     stockQuantity: initialData?.stockQuantity ?? 0,
@@ -143,6 +147,7 @@ export default function ProductForm({ productId, initialData }: Props) {
   const [manualCategory, setManualCategory] = useState(false);
   const [autoSlug, setAutoSlug] = useState(!productId);
   const [saving, setSaving] = useState(false);
+  const [hasDiscount, setHasDiscount] = useState(!!(initialData?.originalPrice && initialData.originalPrice > (initialData?.price || 0)));
 
   // Variant temporary inputs
   const [newVarName, setNewVarName] = useState("");
@@ -159,9 +164,31 @@ export default function ProductForm({ productId, initialData }: Props) {
   useEffect(() => {
     getCategories()
       .then((data) => {
-        setCategories(data);
+        const adminCats: Category[] = ADMIN_COLLECTIONS.map((ac) => ({
+          id: ac.id,
+          slug: ac.slug,
+          name: ac.name,
+          urduName: "",
+          description: "",
+          image: "",
+          itemCount: 0,
+          subcategories: ac.subcategories.map((sc) => ({
+            id: sc.id,
+            slug: sc.slug,
+            name: sc.name,
+            urduName: "",
+            description: "",
+            image: "",
+            itemCount: 0,
+          })),
+        }));
+
+        const firestoreIds = new Set(data.map((c) => c.id));
+        const merged = [...adminCats, ...data.filter((c) => !firestoreIds.has(c.id))];
+        setCategories(merged);
+
         if (initialData?.category) {
-          const matched = data.find(
+          const matched = merged.find(
             (c) =>
               c.slug === initialData.category ||
               c.id === initialData.category ||
@@ -311,8 +338,8 @@ export default function ProductForm({ productId, initialData }: Props) {
             <ArrowLeft size={16} />
           </a>
           <div>
-            <h2 className="page-title">{productId ? "Edit Jewelry Piece" : "Add New Jewelry Piece"}</h2>
-            <p className="page-subtitle">Wholesale jewelry catalog management</p>
+            <h2 className="page-title">{productId ? "Edit Product" : "Add New Product"}</h2>
+            <p className="page-subtitle">Wholesale catalog management</p>
           </div>
         </div>
         <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: "10px 24px" }}>
@@ -345,7 +372,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                   set("name", val);
                   if (autoSlug) set("slug", slugify(val));
                 }}
-                placeholder="e.g. 22K Gold Diamond Pendant Necklace"
+                placeholder="e.g. Premium Stainless Steel Watch"
               />
             </div>
 
@@ -392,7 +419,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     setAutoSlug(false);
                     set("slug", slugify(e.target.value));
                   }}
-                  placeholder="22k-gold-diamond-pendant-necklace"
+                  placeholder="premium-stainless-steel-watch"
                 />
               </div>
             </div>
@@ -517,7 +544,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.category}
                       onChange={(e) => set("category", e.target.value)}
-                      placeholder="e.g. gold-jewelry"
+                      placeholder="e.g. apparel"
                     />
                   </div>
                   <div className="form-group">
@@ -526,7 +553,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.categoryName}
                       onChange={(e) => set("categoryName", e.target.value)}
-                      placeholder="e.g. Gold Jewelry"
+                      placeholder="e.g. Apparel"
                     />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -535,7 +562,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.subCategory || ""}
                       onChange={(e) => set("subCategory", e.target.value)}
-                      placeholder="e.g. necklaces"
+                      placeholder="e.g. men-fashion"
                     />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -544,7 +571,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                       className="input"
                       value={form.subCategoryName || ""}
                       onChange={(e) => set("subCategoryName", e.target.value)}
-                      placeholder="e.g. Necklaces & Pendants"
+                      placeholder="e.g. Men Fashion"
                     />
                   </div>
                 </div>
@@ -576,13 +603,83 @@ export default function ProductForm({ productId, initialData }: Props) {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Jewelry Details Card */}
+            <div className="form-group">
+              <label className="label">Short Description / Subtitle</label>
+              <input
+                className="input"
+                value={form.shortDescription || ""}
+                onChange={(e) => set("shortDescription", e.target.value)}
+                placeholder="e.g. Premium Quality, Handpicked Materials, Fast Shipping"
+              />
+              <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 4, display: "block" }}>
+                Appears on horizontal card subtitle & popup image banner overlay
+              </span>
+            </div>
+
+            <div className="form-group">
+              <label className="label">Price (PKR) *</label>
+              <input
+                className="input"
+                type="number"
+                required
+                value={form.price}
+                onChange={(e) => set("price", Number(e.target.value))}
+                placeholder="e.g. 1500"
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 14px",
+                background: hasDiscount ? "var(--accent-glow)" : "var(--bg-elevated)",
+                border: `1px solid ${hasDiscount ? "var(--accent)" : "var(--border)"}`,
+                borderRadius: 8,
+                marginBottom: hasDiscount ? 14 : 0,
+              }}
+            >
+              <div>
+                <span style={{ fontWeight: 600, fontSize: "0.875rem" }}>Apply Discount</span>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginTop: 2 }}>
+                  Show original price as strikethrough on storefront
+                </span>
+              </div>
+              <label className="toggle" style={{ flexShrink: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={hasDiscount}
+                  onChange={(e) => {
+                    setHasDiscount(e.target.checked);
+                    if (!e.target.checked) set("originalPrice", 0);
+                  }}
+                />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+
+            {hasDiscount && (
+              <div className="form-group">
+                <label className="label">Original / List Price (PKR)</label>
+                <input
+                  className="input"
+                  type="number"
+                  value={form.originalPrice}
+                  onChange={(e) => set("originalPrice", Number(e.target.value))}
+                  placeholder="e.g. 2000"
+                />
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 4, display: "block" }}>
+                  Must be higher than sale price. Shown with strikethrough on product card.
+                </span>
+              </div>
+            )}
+          </div>
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
               <Gem size={20} color="var(--accent)" />
-              <h3 style={{ fontWeight: 700 }}>Jewelry Details</h3>
+              <h3 style={{ fontWeight: 700 }}>Product Details</h3>
             </div>
 
             <div className="grid-2">
@@ -592,10 +689,10 @@ export default function ProductForm({ productId, initialData }: Props) {
                   className="input"
                   value={form.material || ""}
                   onChange={(e) => set("material", e.target.value)}
-                  placeholder="e.g. Gold, Silver, Platinum, Rose Gold"
+                  placeholder="e.g. Gold, Silver, Stainless Steel, Leather"
                 />
                 <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                  {["Gold", "Silver", "Platinum", "Rose Gold", "Bronze", "Copper"].map(m => (
+                  {["Gold", "Silver", "Stainless Steel", "Leather", "Cotton", "Polyester"].map(m => (
                     <button
                       key={m}
                       type="button"
@@ -654,7 +751,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                   className="input"
                   value={form.gemstone || ""}
                   onChange={(e) => set("gemstone", e.target.value)}
-                  placeholder="e.g. Diamond, Ruby, Emerald, Pearl"
+                  placeholder="e.g. Diamond, Ruby, Sapphire, Pearl"
                 />
                 <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                   {["Diamond", "Ruby", "Emerald", "Sapphire", "Pearl", "Topaz", "None"].map(g => (
@@ -864,7 +961,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     style={{ paddingLeft: 36 }}
                     value={form.sku || ""}
                     onChange={(e) => set("sku", e.target.value)}
-                    placeholder="e.g. JLW-GLD-916"
+                    placeholder="e.g. WSP-GLD-001"
                   />
                 </div>
               </div>
@@ -878,7 +975,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     style={{ paddingLeft: 36 }}
                     value={form.brand || ""}
                     onChange={(e) => set("brand", e.target.value)}
-                    placeholder="e.g. M. Arif Jewelers / Anzi Jewels"
+                    placeholder="e.g. Samsung / Apple / Local Brand"
                   />
                 </div>
               </div>
@@ -952,30 +1049,7 @@ export default function ProductForm({ productId, initialData }: Props) {
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
               <Percent size={20} color="var(--accent)" />
-              <h3 style={{ fontWeight: 700 }}>Pricing &amp; Bulk Rates</h3>
-            </div>
-
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="label">Sale Price (PKR) *</label>
-                <input
-                  className="input"
-                  type="number"
-                  required
-                  value={form.price}
-                  onChange={(e) => set("price", Number(e.target.value))}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="label">Original / List Price (PKR)</label>
-                <input
-                  className="input"
-                  type="number"
-                  value={form.originalPrice}
-                  onChange={(e) => set("originalPrice", Number(e.target.value))}
-                />
-              </div>
+              <h3 style={{ fontWeight: 700 }}>Wholesale &amp; Bulk Pricing</h3>
             </div>
 
             <div className="grid-2">
@@ -1013,7 +1087,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                 <div>
                   <h3 style={{ fontWeight: 700 }}>Options &amp; Variants</h3>
                   <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>
-                    Ring Sizes, Chain Lengths, Gemstone Variants, or Metal Options
+                    Sizes, Colors, Materials, or any other product options
                   </p>
                 </div>
               </div>
@@ -1037,7 +1111,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                   <label className="label" style={{ fontSize: "0.72rem" }}>Option / Variant Name</label>
                   <input
                     className="input"
-                    placeholder="e.g. Gold, Diamond, Emerald, Large, Adjustable, 7"
+                    placeholder="e.g. Large, Red, Gold, 128GB, Pack of 3"
                     value={newVarName}
                     onChange={(e) => setNewVarName(e.target.value)}
                   />
@@ -1283,7 +1357,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                 rows={5}
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
-                placeholder="Comprehensive description of the jewelry piece, metal quality, gemstone details, craftsmanship, wholesale packaging, and hallmark information..."
+                placeholder="Comprehensive description of the product, features, specifications, wholesale packaging, and key selling points..."
               />
             </div>
 
@@ -1302,7 +1376,7 @@ export default function ProductForm({ productId, initialData }: Props) {
               <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                 <input
                   className="input"
-                  placeholder="e.g. 100% Hallmarked 22K Gold, Polished & Fine Finished"
+                  placeholder="e.g. Premium Quality, 1 Year Warranty, Fast Delivery"
                   value={newHighlight}
                   onChange={(e) => setNewHighlight(e.target.value)}
                   onKeyDown={(e) => {
@@ -1370,7 +1444,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                     Specifications &amp; Custom Attributes
                   </label>
                   <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-                    Key-Value pairs for jewelry specs (Material, Purity, Gemstone, Certification, etc.)
+                    Key-Value pairs for product specs (Material, Size, Warranty, Certification, etc.)
                   </p>
                 </div>
               </div>
@@ -1409,7 +1483,7 @@ export default function ProductForm({ productId, initialData }: Props) {
                 <input
                   className="input"
                   style={{ flex: "2 1 180px" }}
-                  placeholder="Value (e.g. 22 Karat, 2.5 Carat)"
+                  placeholder="Value (e.g. Stainless Steel, 12 Months, Blue)"
                   value={newSpecVal}
                   onChange={(e) => setNewSpecVal(e.target.value)}
                   onKeyDown={(e) => {

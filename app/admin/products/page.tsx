@@ -2,15 +2,15 @@
 import { useEffect, useState } from "react";
 import { getProducts, deleteProduct, updateProduct } from "@/lib/firestoreServices";
 import type { Product } from "@/types/admin";
-import { Plus, Pencil, Trash2, Search, Gem, Filter } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Package, Filter } from "lucide-react";
 import toast from "react-hot-toast";
 
-const MATERIAL_FILTERS = ["All", "Gold", "Silver", "Platinum", "Rose Gold", "Diamond"];
+const CATEGORY_FILTERS = ["All", "Necklaces", "Rings", "Earrings", "Apparel", "Electronics", "Home & Living"];
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
-  const [materialFilter, setMaterialFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -28,21 +28,20 @@ export default function ProductsPage() {
       p.sku?.toLowerCase().includes(search.toLowerCase()) ||
       p.categoryName?.toLowerCase().includes(search.toLowerCase()) ||
       p.subCategoryName?.toLowerCase().includes(search.toLowerCase()) ||
-      p.material?.toLowerCase().includes(search.toLowerCase()) ||
-      p.gemstone?.toLowerCase().includes(search.toLowerCase());
+      p.material?.toLowerCase().includes(search.toLowerCase());
 
-    const matchesMaterial =
-      materialFilter === "All" || p.material === materialFilter;
+    const matchesCategory =
+      categoryFilter === "All" || p.categoryName === categoryFilter;
 
-    return matchesSearch && matchesMaterial;
+    return matchesSearch && matchesCategory;
   });
 
   const stats = {
     total: products.length,
     inStock: products.filter(p => p.inStock).length,
-    gold: products.filter(p => p.material === "Gold").length,
-    silver: products.filter(p => p.material === "Silver").length,
-    diamond: products.filter(p => p.gemstone === "Diamond").length,
+    necklaces: products.filter(p => p.categoryName === "Necklaces").length,
+    apparel: products.filter(p => p.categoryName === "Apparel").length,
+    electronics: products.filter(p => p.categoryName === "Electronics").length,
   };
 
   async function handleDelete(id: string, name: string) {
@@ -69,12 +68,12 @@ export default function ProductsPage() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <h2 className="page-title">Jewelry Products</h2>
-          <p className="page-subtitle">{products.length} total pieces in your catalog</p>
+          <h2 className="page-title">Products</h2>
+          <p className="page-subtitle">{products.length} total products in your catalog</p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <a href="/admin/products/new" className="btn btn-primary">
-            <Plus size={16} /> Add New Piece
+            <Plus size={16} /> Add New Product
           </a>
         </div>
       </div>
@@ -82,15 +81,15 @@ export default function ProductsPage() {
       {/* Quick Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 24 }}>
         {[
-          { label: "Total Pieces", value: stats.total, color: "var(--accent)" },
+          { label: "Total Products", value: stats.total, color: "var(--accent)" },
           { label: "In Stock", value: stats.inStock, color: "var(--green)" },
-          { label: "Gold", value: stats.gold, color: "#f59e0b" },
-          { label: "Silver", value: stats.silver, color: "#94a3b8" },
-          { label: "Diamond", value: stats.diamond, color: "#a78bfa" },
+          { label: "Necklaces", value: stats.necklaces, color: "#f59e0b" },
+          { label: "Apparel", value: stats.apparel, color: "#94a3b8" },
+          { label: "Electronics", value: stats.electronics, color: "#a78bfa" },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Gem size={18} color={s.color} />
+              <Package size={18} color={s.color} />
             </div>
             <div>
               <p style={{ fontSize: "1.3rem", fontWeight: 800, lineHeight: 1 }}>{s.value}</p>
@@ -107,7 +106,7 @@ export default function ProductsPage() {
             <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
             <input
               className="input"
-              placeholder="Search by name, brand, SKU, material, or gemstone..."
+              placeholder="Search by name, brand, SKU, or category..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ paddingLeft: 38 }}
@@ -115,15 +114,15 @@ export default function ProductsPage() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Filter size={14} color="var(--text-muted)" />
-            {MATERIAL_FILTERS.map(m => (
+            {CATEGORY_FILTERS.map(m => (
               <button
                 key={m}
                 type="button"
-                onClick={() => setMaterialFilter(m)}
+                onClick={() => setCategoryFilter(m)}
                 style={{
-                  background: materialFilter === m ? "var(--accent-glow)" : "var(--bg-elevated)",
-                  color: materialFilter === m ? "var(--accent)" : "var(--text-secondary)",
-                  border: `1px solid ${materialFilter === m ? "var(--accent)" : "var(--border)"}`,
+                  background: categoryFilter === m ? "var(--accent-glow)" : "var(--bg-elevated)",
+                  color: categoryFilter === m ? "var(--accent)" : "var(--text-secondary)",
+                  border: `1px solid ${categoryFilter === m ? "var(--accent)" : "var(--border)"}`,
                   borderRadius: 20,
                   padding: "4px 12px",
                   fontSize: "0.75rem",
@@ -139,11 +138,11 @@ export default function ProductsPage() {
         </div>
 
         {loading ? (
-          <p style={{ color: "var(--text-muted)", padding: "40px 0", textAlign: "center" }}>Loading jewelry catalog...</p>
+          <p style={{ color: "var(--text-muted)", padding: "40px 0", textAlign: "center" }}>Loading products...</p>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-muted)" }}>
-            <Gem size={48} style={{ opacity: 0.3, margin: "0 auto 12px" }} />
-            <p>No jewelry pieces found. <a href="/admin/products/new" style={{ color: "var(--accent)" }}>Add your first piece...</a></p>
+            <Package size={48} style={{ opacity: 0.3, margin: "0 auto 12px" }} />
+            <p>No products found. <a href="/admin/products/new" style={{ color: "var(--accent)" }}>Add your first product...</a></p>
           </div>
         ) : (
           <div className="table-container">
@@ -152,9 +151,7 @@ export default function ProductsPage() {
                 <tr>
                   <th>Product</th>
                   <th>Category</th>
-                  <th>Material & Purity</th>
-                  <th>Gemstone</th>
-                  <th>Weight</th>
+                  <th>Material</th>
                   <th>Price</th>
                   <th>Stock</th>
                   <th>Visibility</th>
@@ -172,7 +169,7 @@ export default function ProductsPage() {
                           <img src={p.image} alt={p.name} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
                         ) : (
                           <div style={{ width: 44, height: 44, borderRadius: 8, background: "var(--bg-elevated)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Gem size={18} color="var(--text-muted)" />
+                            <Package size={18} color="var(--text-muted)" />
                           </div>
                         )}
                         <div>
@@ -201,7 +198,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
 
-                    {/* Material & Purity */}
+                    {/* Material */}
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         {p.material ? (
@@ -212,36 +209,10 @@ export default function ProductsPage() {
                         {p.metalPurity && (
                           <span style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 600 }}>{p.metalPurity}</span>
                         )}
-                        {p.hallmark && (
-                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{p.hallmark}</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Gemstone */}
-                    <td>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        {p.gemstone ? (
-                          <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{p.gemstone}</span>
-                        ) : (
-                          <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>-</span>
-                        )}
-                        {p.gemstoneQuality && (
-                          <span style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 600 }}>{p.gemstoneQuality}</span>
-                        )}
                         {p.certification && (
                           <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{p.certification}</span>
                         )}
                       </div>
-                    </td>
-
-                    {/* Weight */}
-                    <td>
-                      {p.weightGrams ? (
-                        <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{p.weightGrams}g</span>
-                      ) : (
-                        <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>-</span>
-                      )}
                     </td>
 
                     {/* Price */}
