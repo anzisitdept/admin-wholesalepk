@@ -3,14 +3,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import {
-  LayoutDashboard, Package, Tag, ShoppingCart, Star,
+  LayoutDashboard, Package, ShoppingCart, Star,
   FileImage, Settings, LogOut, ChevronLeft, ChevronRight, Store, X
 } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/content", label: "Content", icon: FileImage },

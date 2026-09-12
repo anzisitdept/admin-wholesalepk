@@ -3,7 +3,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { getStoreContent, updateStoreContent, getProducts } from "@/lib/firestoreServices";
 import ImageUploader from "@/components/admin/ImageUploader";
 import ProductPicker from "@/components/admin/ProductPicker";
-import type { StoreContent, HeroSlide, Banner, Product } from "@/types/admin";
+import type { StoreContent, HeroSlide, Product } from "@/types/admin";
 import {
   Plus,
   X,
@@ -14,9 +14,6 @@ import {
   Megaphone,
   Sliders,
   Flame,
-  Sparkles,
-  Image as ImageIcon,
-  Gift,
   CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -177,51 +174,10 @@ export default function ContentPage() {
     }));
   }
 
-  // ─── 6. Mid Banners Handlers ───
-  function addBanner() {
-    const b: Banner = {
-      id: Date.now().toString(),
-      image: "",
-      link: "/collections/all",
-      alt: "",
-    };
-    setContent((c) => ({ ...c, midBanners: [...c.midBanners, b] }));
-  }
-
-  function updateBanner(i: number, key: keyof Banner, val: string) {
-    setContent((c) => {
-      const banners = [...c.midBanners];
-      banners[i] = { ...banners[i], [key]: val };
-      return { ...c, midBanners: banners };
-    });
-  }
-
-  function moveBanner(i: number, dir: "up" | "down") {
-    const target = dir === "up" ? i - 1 : i + 1;
-    if (target < 0 || target >= content.midBanners.length) return;
-    setContent((c) => {
-      const banners = [...c.midBanners];
-      const temp = banners[i];
-      banners[i] = banners[target];
-      banners[target] = temp;
-      return { ...c, midBanners: banners };
-    });
-  }
-
-  function removeBanner(i: number) {
-    setContent((c) => ({
-      ...c,
-      midBanners: c.midBanners.filter((_, j) => j !== i),
-    }));
-  }
-
   const sectionsNav = [
     { id: "topbar", label: "1. Top Bar", icon: Megaphone },
     { id: "hero", label: "2. Hero Slider", icon: Sliders },
     { id: "bestsellers", label: "3. Best Sellers", icon: Flame },
-    { id: "newarrivals", label: "4. New Arrivals", icon: Sparkles },
-    { id: "banners", label: "5. Mid Banners", icon: ImageIcon },
-    { id: "bundles", label: "6. Bundle Offers", icon: Gift },
   ];
 
   const scrollToSection = (id: string) => {
@@ -259,7 +215,7 @@ export default function ContentPage() {
       >
         <div>
           <h2 className="page-title">Homepage Customizer & Content</h2>
-          <p className="page-subtitle">Configure, order, and customize all 7 storefront homepage sections</p>
+          <p className="page-subtitle">Configure, order, and customize all 3 storefront homepage sections</p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: "10px 24px" }}>
@@ -613,223 +569,6 @@ export default function ContentPage() {
           />
         </div>
 
-        {/* ============================================================
-            4. NEW ARRIVALS
-           ============================================================ */}
-        <div id="section-newarrivals" className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Sparkles size={20} color="var(--accent)" />
-            <h3 style={{ fontWeight: 700, fontSize: "1.1rem" }}>4. New Arrivals</h3>
-          </div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: 20 }}>
-            Choose recently launched or seasonal products to highlight in the New Arrivals block.
-          </p>
-
-          <div className="form-group" style={{ marginBottom: 18 }}>
-            <label className="label">Section Heading / Title</label>
-            <input
-              className="input"
-              value={content.newArrivals?.title || ""}
-              onChange={(e) =>
-                setContent((c) => ({
-                  ...c,
-                  newArrivals: {
-                    ...c.newArrivals,
-                    title: e.target.value,
-                  },
-                }))
-              }
-              placeholder="e.g. New Arrivals"
-            />
-          </div>
-
-          <ProductPicker
-            sectionName="New Arrivals"
-            products={products}
-            selectedIds={content.newArrivals?.productIds || []}
-            onChange={(ids) =>
-              setContent((c) => ({
-                ...c,
-                newArrivals: {
-                  ...c.newArrivals,
-                  productIds: ids,
-                },
-              }))
-            }
-          />
-        </div>
-
-        {/* ============================================================
-            5. MID BANNER
-           ============================================================ */}
-        <div id="section-banners" className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <ImageIcon size={20} color="var(--accent)" />
-              <h3 style={{ fontWeight: 700, fontSize: "1.1rem" }}>5. Mid Banners</h3>
-            </div>
-            <button type="button" onClick={addBanner} className="btn btn-ghost" style={{ padding: "6px 12px", fontSize: "0.825rem" }}>
-              <Plus size={14} /> Add New Banner
-            </button>
-          </div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: 20 }}>
-            Promotional banners placed between homepage sections with click-through redirection.
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {content.midBanners.map((banner, i) => (
-              <div
-                key={banner.id}
-                style={{
-                  background: "var(--bg-elevated)",
-                  borderRadius: 10,
-                  padding: 18,
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>Banner #{i + 1}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <button
-                      type="button"
-                      title="Move Up"
-                      disabled={i === 0}
-                      onClick={() => moveBanner(i, "up")}
-                      style={{
-                        background: "none",
-                        border: "1px solid var(--border)",
-                        borderRadius: 4,
-                        color: i === 0 ? "var(--text-muted)" : "var(--text-primary)",
-                        cursor: i === 0 ? "not-allowed" : "pointer",
-                        padding: "4px 6px",
-                        display: "flex",
-                        opacity: i === 0 ? 0.3 : 1,
-                      }}
-                    >
-                      <ChevronUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      title="Move Down"
-                      disabled={i === content.midBanners.length - 1}
-                      onClick={() => moveBanner(i, "down")}
-                      style={{
-                        background: "none",
-                        border: "1px solid var(--border)",
-                        borderRadius: 4,
-                        color: i === content.midBanners.length - 1 ? "var(--text-muted)" : "var(--text-primary)",
-                        cursor: i === content.midBanners.length - 1 ? "not-allowed" : "pointer",
-                        padding: "4px 6px",
-                        display: "flex",
-                        opacity: i === content.midBanners.length - 1 ? 0.3 : 1,
-                      }}
-                    >
-                      <ChevronDown size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeBanner(i)}
-                      style={{
-                        background: "var(--red-bg)",
-                        border: "1px solid rgba(239,68,68,0.2)",
-                        borderRadius: 4,
-                        color: "var(--red)",
-                        cursor: "pointer",
-                        padding: "4px 8px",
-                        fontSize: "0.75rem",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        marginLeft: 6,
-                      }}
-                    >
-                      <X size={12} /> Delete
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid-2">
-                  <ImageUploader
-                    label="Banner Image (Recommended 1920x500)"
-                    value={banner.image}
-                    onChange={(url) => updateBanner(i, "image", url)}
-                    path="banners"
-                  />
-                  <div>
-                    <div className="form-group">
-                      <label className="label">Redirection Link URL</label>
-                      <input
-                        className="input"
-                        value={banner.link}
-                        onChange={(e) => updateBanner(i, "link", e.target.value)}
-                        placeholder="e.g. /collections/best-selling"
-                      />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="label">Alt Text</label>
-                      <input
-                        className="input"
-                        value={banner.alt}
-                        onChange={(e) => updateBanner(i, "alt", e.target.value)}
-                        placeholder="e.g. Seasonal Sale Promo Banner"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {content.midBanners.length === 0 && (
-              <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No mid banners configured. Click &quot;Add New Banner&quot; to create one.</p>
-            )}
-          </div>
-        </div>
-
-        {/* ============================================================
-            6. BUNDLE OFFERS
-           ============================================================ */}
-        <div id="section-bundles" className="card">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Gift size={20} color="var(--accent)" />
-            <h3 style={{ fontWeight: 700, fontSize: "1.1rem" }}>6. Bundle Offers</h3>
-          </div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: 20 }}>
-            Select bundle packs, family combos, and special deals for the Bundle Offers section.
-          </p>
-
-          <div className="form-group" style={{ marginBottom: 18 }}>
-            <label className="label">Section Heading / Title</label>
-            <input
-              className="input"
-              value={content.bundleOffers?.title || ""}
-              onChange={(e) =>
-                setContent((c) => ({
-                  ...c,
-                  bundleOffers: {
-                    ...c.bundleOffers,
-                    title: e.target.value,
-                  },
-                }))
-              }
-              placeholder="e.g. Bundle Offers & Value Packs"
-            />
-          </div>
-
-          <ProductPicker
-            sectionName="Bundle Offers"
-            products={products}
-            selectedIds={content.bundleOffers?.productIds || []}
-            onChange={(ids) =>
-              setContent((c) => ({
-                ...c,
-                bundleOffers: {
-                  ...c.bundleOffers,
-                  productIds: ids,
-                },
-              }))
-            }
-          />
-        </div>
-
         {/* Floating Bottom Save Bar */}
         <div
           style={{
@@ -846,7 +585,7 @@ export default function ContentPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <CheckCircle2 size={20} color="var(--green)" />
             <span style={{ fontSize: "0.875rem", color: "var(--text-primary)", fontWeight: 500 }}>
-              All 6 homepage sections will sync directly to Firestore under <code>store_content/homepage</code>
+              All 3 homepage sections will sync directly to Firestore under <code>store_content/homepage</code>
             </span>
           </div>
           <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: "10px 28px" }}>
