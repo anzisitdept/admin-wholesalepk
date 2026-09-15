@@ -28,6 +28,7 @@ import type {
   Order,
   Review,
   StoreContent,
+  StoreSettings,
   OrderStatus,
   ReviewStatus,
 } from "@/types/admin";
@@ -188,7 +189,7 @@ export async function deleteReview(id: string): Promise<void> {
 }
 
 // ─────────────────────────────────────────────
-// STORE CONTENT
+// STORE CONTENT & SETTINGS
 // ─────────────────────────────────────────────
 export async function getStoreContent(): Promise<StoreContent | null> {
   const snap = await getDoc(doc(db, "store_content", "homepage"));
@@ -202,6 +203,39 @@ export async function updateStoreContent(data: Partial<StoreContent>): Promise<v
     await setDoc(ref2, data, { merge: true });
   });
 }
+
+export async function getStoreSettings(): Promise<StoreSettings> {
+  const snap = await getDoc(doc(db, "store_settings", "general"));
+  if (snap.exists()) {
+    return snap.data() as StoreSettings;
+  }
+  const homeSnap = await getDoc(doc(db, "store_content", "homepage"));
+  if (homeSnap.exists() && homeSnap.data()?.shippingFee !== undefined) {
+    const data = homeSnap.data()!;
+    return {
+      storeName: data.storeName || "Waada Jewels",
+      storeEmail: data.storeEmail || "info@waadajewels.com",
+      storePhone: data.storePhone || "+92 300 0000000",
+      freeShippingThreshold: Number(data.freeShippingThreshold) ?? 2999,
+      shippingFee: Number(data.shippingFee) ?? 0,
+    };
+  }
+  return {
+    storeName: "Waada Jewels",
+    storeEmail: "info@waadajewels.com",
+    storePhone: "+92 300 0000000",
+    freeShippingThreshold: 2999,
+    shippingFee: 0,
+  };
+}
+
+export async function updateStoreSettings(data: Partial<StoreSettings>): Promise<void> {
+  const { setDoc } = await import("firebase/firestore");
+  await setDoc(doc(db, "store_settings", "general"), data, { merge: true });
+  await setDoc(doc(db, "store_content", "homepage"), data, { merge: true });
+  await setDoc(doc(db, "settings", "store"), data, { merge: true });
+}
+
 
 // ─────────────────────────────────────────────
 // STORAGE / IMGBB UPLOAD

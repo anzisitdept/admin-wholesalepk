@@ -188,3 +188,13 @@ export interface DashboardStats {
   pendingReviews: number;
   pendingOrders: number;
 }
+
+export interface StoreSettings {
+  storeName: string;
+  storeEmail: string;
+  storePhone: string;
+  freeShippingThreshold: number;
+  shippingFee: number;
+  [key: string]: any;
+}
+
