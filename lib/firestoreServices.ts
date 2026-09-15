@@ -81,6 +81,21 @@ export async function getCategories(): Promise<Category[]> {
   });
 }
 
+export function subscribeCategories(callback: (categories: Category[]) => void) {
+  return onSnapshot(collection(db, "categories"), (snap) => {
+    const cats = snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        subcategories: [],
+        ...data,
+      } as unknown as Category;
+    });
+    callback(cats);
+  });
+}
+
+
 export async function getCategory(id: string): Promise<Category | null> {
   const snap = await getDoc(doc(db, "categories", id));
   if (!snap.exists()) return null;

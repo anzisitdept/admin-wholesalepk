@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo, FormEvent } from "react";
 import {
   getCategories,
+  subscribeCategories,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -80,21 +81,13 @@ export default function CategoriesPage() {
 
   const [saving, setSaving] = useState(false);
 
-  async function load() {
-    setLoading(true);
-    try {
-      const data = await getCategories();
-      setCategories(data);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load categories.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    load();
+    setLoading(true);
+    const unsubscribe = subscribeCategories((data) => {
+      setCategories(data);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   // Stats calculation
@@ -164,7 +157,6 @@ export default function CategoriesPage() {
         toast.success("Main Category created successfully!");
       }
       setShowCategoryModal(false);
-      await load();
     } catch (err) {
       console.error(err);
       toast.error("Failed to save category.");
@@ -184,7 +176,6 @@ export default function CategoriesPage() {
     try {
       await deleteCategory(c.id);
       toast.success("Category deleted.");
-      await load();
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete category.");
@@ -244,7 +235,6 @@ export default function CategoriesPage() {
       // Ensure parent category is expanded
       setExpandedIds((prev) => ({ ...prev, [parentCategory.id]: true }));
       setShowSubModal(false);
-      await load();
     } catch (err) {
       console.error(err);
       toast.error("Failed to save sub-category.");
@@ -258,7 +248,6 @@ export default function CategoriesPage() {
     try {
       await deleteSubCategory(parent.id, sub.id);
       toast.success("Sub-category removed.");
-      await load();
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete sub-category.");

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct, updateProduct, getCategories } from "@/lib/firestoreServices";
+import { createProduct, updateProduct, subscribeCategories } from "@/lib/firestoreServices";
 import ImageUploader from "@/components/admin/ImageUploader";
 import {
   X,
@@ -137,66 +137,71 @@ export default function ProductForm({ productId, initialData }: Props) {
   const [hasDiscount, setHasDiscount] = useState(!!(initialData?.originalPrice && initialData.originalPrice > (initialData?.price || 0)));
 
   useEffect(() => {
-    getCategories()
-      .then((data) => {
-        const adminCats: Category[] = ADMIN_COLLECTIONS.map((ac) => ({
-          id: ac.id,
-          slug: ac.slug,
-          name: ac.name,
+    const unsubscribe = subscribeCategories((data) => {
+      const adminCats: Category[] = ADMIN_COLLECTIONS.map((ac) => ({
+        id: ac.id,
+        slug: ac.slug,
+        name: ac.name,
+        urduName: "",
+        description: "",
+        image: "",
+        itemCount: 0,
+        subcategories: ac.subcategories.map((sc) => ({
+          id: sc.id,
+          slug: sc.slug,
+          name: sc.name,
           urduName: "",
           description: "",
           image: "",
           itemCount: 0,
-          subcategories: ac.subcategories.map((sc) => ({
-            id: sc.id,
-            slug: sc.slug,
-            name: sc.name,
-            urduName: "",
-            description: "",
-            image: "",
-            itemCount: 0,
-          })),
-        }));
+        })),
+      }));
 
-        const firestoreIds = new Set(data.map((c) => c.id));
-        const merged = [...adminCats, ...data.filter((c) => !firestoreIds.has(c.id))];
-        setCategories(merged);
+      const firestoreIds = new Set(data.map((c) => c.id));
+      const firestoreSlugs = new Set(data.map((c) => c.slug));
+      const merged = [
+        ...data,
+        ...adminCats.filter((c) => !firestoreIds.has(c.id) && !firestoreSlugs.has(c.slug)),
+      ];
+      setCategories(merged);
 
-        if (initialData?.category) {
-          const matched = merged.find(
-            (c) =>
-              c.slug === initialData.category ||
-              c.id === initialData.category ||
-              c.name === initialData.category ||
-              c.name?.toLowerCase() === String(initialData.category).toLowerCase()
-          );
-          if (matched) {
-            setManualCategory(false);
-            setForm((prev) => {
-              const next = {
-                ...prev,
-                category: matched.slug,
-                categoryName: prev.categoryName || matched.name,
-              };
-              if (next.subCategory && matched.subcategories) {
-                const sub = matched.subcategories.find(
-                  (s) => s.slug === next.subCategory || s.id === next.subCategory
-                );
-                if (sub) {
-                  next.subCategory = sub.slug;
-                  next.subCategoryName = prev.subCategoryName || sub.name;
-                }
+      if (initialData?.category) {
+        const matched = merged.find(
+          (c) =>
+            c.slug === initialData.category ||
+            c.id === initialData.category ||
+            c.name === initialData.category ||
+            c.name?.toLowerCase() === String(initialData.category).toLowerCase()
+        );
+        if (matched) {
+          setManualCategory(false);
+          setForm((prev) => {
+            const next = {
+              ...prev,
+              category: matched.slug || matched.id,
+              categoryName: prev.categoryName || matched.name,
+            };
+            if (next.subCategory && matched.subcategories) {
+              const sub = matched.subcategories.find(
+                (s) => s.slug === next.subCategory || s.id === next.subCategory
+              );
+              if (sub) {
+                next.subCategory = sub.slug || sub.id;
+                next.subCategoryName = prev.subCategoryName || sub.name;
               }
-              return next;
-            });
-          } else {
-            setManualCategory(true);
-          }
+            }
+            return next;
+          });
+        } else {
+          setManualCategory(true);
         }
-      })
-      .catch((e) => console.error("Error loading categories", e))
-      .finally(() => setLoadingCats(false));
+      }
+      setLoadingCats(false);
+    });
+
+    return () => unsubscribe();
   }, [initialData?.category]);
+
 
   function set(key: keyof typeof form, val: any) {
     setForm((p) => ({ ...p, [key]: val }));

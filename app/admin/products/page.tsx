@@ -2,15 +2,12 @@
 import { useEffect, useState } from "react";
 import { getProducts, deleteProduct, updateProduct } from "@/lib/firestoreServices";
 import type { Product } from "@/types/admin";
-import { Plus, Pencil, Trash2, Search, Package, Filter } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Package } from "lucide-react";
 import toast from "react-hot-toast";
-
-const CATEGORY_FILTERS = ["All", "Necklaces", "Rings", "Earrings", "Apparel", "Electronics", "Home & Living"];
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -22,26 +19,20 @@ export default function ProductsPage() {
   useEffect(() => { load(); }, []);
 
   const filtered = products.filter(p => {
-    const matchesSearch =
+    return (
       p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.brand?.toLowerCase().includes(search.toLowerCase()) ||
       p.sku?.toLowerCase().includes(search.toLowerCase()) ||
       p.categoryName?.toLowerCase().includes(search.toLowerCase()) ||
       p.subCategoryName?.toLowerCase().includes(search.toLowerCase()) ||
-      p.material?.toLowerCase().includes(search.toLowerCase());
-
-    const matchesCategory =
-      categoryFilter === "All" || p.categoryName === categoryFilter;
-
-    return matchesSearch && matchesCategory;
+      p.material?.toLowerCase().includes(search.toLowerCase())
+    );
   });
 
   const stats = {
     total: products.length,
     inStock: products.filter(p => p.inStock).length,
-    necklaces: products.filter(p => p.categoryName === "Necklaces").length,
-    apparel: products.filter(p => p.categoryName === "Apparel").length,
-    electronics: products.filter(p => p.categoryName === "Electronics").length,
+    outOfStock: products.filter(p => !p.inStock).length,
   };
 
   async function handleDelete(id: string, name: string) {
@@ -79,13 +70,11 @@ export default function ProductsPage() {
       </div>
 
       {/* Quick Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 24 }}>
         {[
           { label: "Total Products", value: stats.total, color: "var(--accent)" },
           { label: "In Stock", value: stats.inStock, color: "var(--green)" },
-          { label: "Necklaces", value: stats.necklaces, color: "#f59e0b" },
-          { label: "Apparel", value: stats.apparel, color: "#94a3b8" },
-          { label: "Electronics", value: stats.electronics, color: "#a78bfa" },
+          { label: "Out of Stock", value: stats.outOfStock, color: "var(--red)" },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -100,9 +89,9 @@ export default function ProductsPage() {
       </div>
 
       <div className="card">
-        {/* Search & Filters Row */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-          <div style={{ position: "relative", flex: "1 1 280px", maxWidth: 420 }}>
+        {/* Search Bar Row */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center" }}>
+          <div style={{ position: "relative", flex: 1, maxWidth: 500 }}>
             <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
             <input
               className="input"
@@ -111,29 +100,6 @@ export default function ProductsPage() {
               onChange={(e) => setSearch(e.target.value)}
               style={{ paddingLeft: 38 }}
             />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Filter size={14} color="var(--text-muted)" />
-            {CATEGORY_FILTERS.map(m => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setCategoryFilter(m)}
-                style={{
-                  background: categoryFilter === m ? "var(--accent-glow)" : "var(--bg-elevated)",
-                  color: categoryFilter === m ? "var(--accent)" : "var(--text-secondary)",
-                  border: `1px solid ${categoryFilter === m ? "var(--accent)" : "var(--border)"}`,
-                  borderRadius: 20,
-                  padding: "4px 12px",
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {m}
-              </button>
-            ))}
           </div>
         </div>
 
