@@ -59,7 +59,7 @@ export default function ContentPage() {
           setContent({
             topBarMessages: storeContent.topBarMessages || DEFAULT_CONTENT.topBarMessages,
             heroSlides: storeContent.heroSlides || [],
-            shopByCategory: storeContent.shopByCategory,
+            ...(storeContent.shopByCategory ? { shopByCategory: storeContent.shopByCategory } : {}),
             bestSellers: {
               title: storeContent.bestSellers?.title || "Best Sellers",
               productIds: storeContent.bestSellers?.productIds || [],

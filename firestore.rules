@@ -3,43 +3,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Products: Anyone can read, only authenticated admin can create/update/delete
-    match /products/{id} {
+    // Products: Anyone can read, only authenticated admin can edit
+    match /products/{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // Categories: Anyone can read, only authenticated admin can create/update/delete
-    match /categories/{id} {
+    // Categories: Anyone can read, only authenticated admin can edit
+    match /categories/{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // Store Content (Homepage hero slides, banners, etc.): Anyone can read, only admin can edit
-    match /store_content/{id} {
+    // Store Content (Homepage hero slides, banners, etc.): Anyone can read, only authenticated admin can edit
+    match /store_content/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Store Settings & General Settings: Read for all, authenticated admin can edit
+    match /store_settings/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /settings/{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
     // Orders: Customers can submit orders (create); only authenticated admin can view, update, delete
-    match /orders/{id} {
+    match /orders/{document=**} {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
     }
 
     // Reviews: Anyone can read and submit reviews; only authenticated admin can approve or delete
-    match /reviews/{id} {
+    match /reviews/{document=**} {
       allow read, create: if true;
       allow update, delete: if request.auth != null;
     }
 
-    // Settings & Coupons: Read/write for authenticated admin
-    match /settings/{id} {
-      allow read, write: if request.auth != null;
-    }
-    match /coupons/{id} {
+    // Coupons: Read for all, authenticated admin can edit
+    match /coupons/{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }
   }
 }
+

@@ -5,6 +5,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  setDoc,
   deleteDoc,
   onSnapshot,
   query,
@@ -198,11 +199,10 @@ export async function getStoreContent(): Promise<StoreContent | null> {
 
 export async function updateStoreContent(data: Partial<StoreContent>): Promise<void> {
   const ref2 = doc(db, "store_content", "homepage");
-  await updateDoc(ref2, data).catch(async () => {
-    const { setDoc } = await import("firebase/firestore");
-    await setDoc(ref2, data, { merge: true });
-  });
+  const cleanData = JSON.parse(JSON.stringify(data));
+  await setDoc(ref2, cleanData, { merge: true });
 }
+
 
 export async function getStoreSettings(): Promise<StoreSettings> {
   const snap = await getDoc(doc(db, "store_settings", "general"));
@@ -230,10 +230,10 @@ export async function getStoreSettings(): Promise<StoreSettings> {
 }
 
 export async function updateStoreSettings(data: Partial<StoreSettings>): Promise<void> {
-  const { setDoc } = await import("firebase/firestore");
-  await setDoc(doc(db, "store_settings", "general"), data, { merge: true });
-  await setDoc(doc(db, "store_content", "homepage"), data, { merge: true });
-  await setDoc(doc(db, "settings", "store"), data, { merge: true });
+  const cleanData = JSON.parse(JSON.stringify(data));
+  await setDoc(doc(db, "store_settings", "general"), cleanData, { merge: true });
+  await setDoc(doc(db, "store_content", "homepage"), cleanData, { merge: true });
+  await setDoc(doc(db, "settings", "store"), cleanData, { merge: true });
 }
 
 
