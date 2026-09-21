@@ -22,6 +22,16 @@ export const ADMIN_COLLECTIONS: CategoryOption[] = [
     ],
   },
   {
+    id: "earrings",
+    name: "Earrings",
+    slug: "earrings",
+    subcategories: [
+      { id: "studs", name: "Studs", slug: "studs" },
+      { id: "hoops", name: "Hoops", slug: "hoops" },
+      { id: "drops", name: "Drops & Danglers", slug: "drops" },
+    ],
+  },
+  {
     id: "rings",
     name: "Rings",
     slug: "rings",
@@ -39,11 +49,16 @@ export const ADMIN_COLLECTIONS: CategoryOption[] = [
     ],
   },
   {
-    id: "firefighters",
-    name: "Firefighters",
-    slug: "firefighters",
-    subcategories: [
-      { id: "firefighter-equipment", name: "Equipment & Gear", slug: "firefighter-equipment" },
-    ],
+    id: "firelighters",
+    name: "FireLighters",
+    slug: "firelighters",
+    subcategories: [],
+  },
+  {
+    id: "watches",
+    name: "Watches",
+    slug: "watches",
+    subcategories: [],
   },
 ];
+

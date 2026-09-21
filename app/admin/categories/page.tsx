@@ -9,6 +9,7 @@ import {
   addSubCategory,
   updateSubCategory,
   deleteSubCategory,
+  syncCategoriesToFirestore,
 } from "@/lib/firestoreServices";
 import ImageUploader from "@/components/admin/ImageUploader";
 import type { Category, SubCategory } from "@/types/admin";
@@ -28,6 +29,7 @@ import {
   ExternalLink,
   Package,
   ImageIcon,
+  RefreshCw,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -80,6 +82,29 @@ export default function CategoriesPage() {
   const [subAutoSlug, setSubAutoSlug] = useState(true);
 
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  async function handleSyncCategories() {
+    if (
+      !confirm(
+        "This will synchronize and update all master jewelry & luxury categories (Necklaces, Earrings, Rings, Bracelets, FireLighters, Watches) into Firestore. Continue?"
+      )
+    ) {
+      return;
+    }
+    setSyncing(true);
+    try {
+      const res = await syncCategoriesToFirestore();
+      toast.success(
+        `Successfully synced ${res.total} master categories to Firestore! (${res.added} added, ${res.updated} updated)`
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to sync categories to Firestore.");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -289,6 +314,16 @@ export default function CategoriesPage() {
           </p>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={handleSyncCategories}
+            disabled={syncing}
+            className="btn btn-secondary"
+            title="Push & sync master categories directly to Firestore"
+          >
+            <RefreshCw size={16} className={syncing ? "spin" : ""} />
+            {syncing ? "Syncing Categories..." : "Sync Categories to Firestore"}
+          </button>
           <button onClick={openNewCategory} className="btn btn-primary">
             <Plus size={16} /> New Main Category
           </button>
@@ -452,9 +487,20 @@ export default function CategoriesPage() {
           <p style={{ color: "var(--text-secondary)", marginBottom: 20 }}>
             {search ? "No categories match your search query." : "You haven't created any wholesale categories yet."}
           </p>
-          <button onClick={openNewCategory} className="btn btn-primary">
-            <Plus size={16} /> Create First Category
-          </button>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={handleSyncCategories}
+              disabled={syncing}
+              className="btn btn-secondary"
+            >
+              <RefreshCw size={16} className={syncing ? "spin" : ""} />
+              {syncing ? "Syncing..." : "Sync Master Categories to Firestore"}
+            </button>
+            <button onClick={openNewCategory} className="btn btn-primary">
+              <Plus size={16} /> Create First Category
+            </button>
+          </div>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

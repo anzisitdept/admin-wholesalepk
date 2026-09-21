@@ -22,6 +22,7 @@ import {
 } from "firebase/storage";
 import { db, storage } from "./firebase";
 import { uploadToImgBB } from "./imgbbUpload";
+import { MASTER_CATEGORIES } from "@/constants/categories";
 import type {
   Product,
   Category,
@@ -147,6 +148,101 @@ export async function deleteSubCategory(categoryId: string, subCategoryId: strin
   if (!cat) throw new Error("Category not found");
   const subcategories = (cat.subcategories || []).filter((s) => s.id !== subCategoryId);
   await updateDoc(doc(db, "categories", categoryId), { subcategories });
+}
+
+export async function syncCategoriesToFirestore(
+  masterList: Category[] = MASTER_CATEGORIES
+): Promise<{ added: number; updated: number; total: number }> {
+  const snap = await getDocs(collection(db, "categories"));
+  const existingMap = new Map<string, { id: string; data: Record<string, any> }>();
+
+  snap.docs.forEach((d) => {
+    const data = d.data();
+    existingMap.set(d.id.toLowerCase(), { id: d.id, data });
+    if (data.slug) {
+      existingMap.set(String(data.slug).toLowerCase(), { id: d.id, data });
+    }
+  });
+
+  let added = 0;
+  let updated = 0;
+
+  for (const cat of masterList) {
+    const targetKey = (cat.id || cat.slug).toLowerCase();
+    const slugKey = (cat.slug || "").toLowerCase();
+    const existing = existingMap.get(targetKey) || (slugKey ? existingMap.get(slugKey) : undefined);
+
+    const docId = existing ? existing.id : (cat.id || cat.slug);
+    const existingData = existing ? existing.data : {};
+
+    // Build merged subcategories
+    const masterSubs = cat.subcategories || [];
+    const existingSubs: SubCategory[] = Array.isArray(existingData.subcategories)
+      ? existingData.subcategories
+      : [];
+
+    const mergedSubs: SubCategory[] = masterSubs.map((ms) => {
+      const existingSub = existingSubs.find(
+        (es) =>
+          (es.id && es.id.toLowerCase() === ms.id.toLowerCase()) ||
+          (es.slug && es.slug.toLowerCase() === ms.slug.toLowerCase())
+      );
+      return {
+        id: ms.id || ms.slug,
+        slug: ms.slug,
+        name: ms.name,
+        urduName: ms.urduName || existingSub?.urduName || "",
+        description: ms.description || existingSub?.description || "",
+        image: ms.image || existingSub?.image || "",
+        itemCount: ms.itemCount ?? (existingSub?.itemCount || 0),
+      };
+    });
+
+    // Also include any custom existing subcategories that weren't in masterSubs
+    existingSubs.forEach((es) => {
+      const alreadyIncluded = mergedSubs.some(
+        (ms) =>
+          (ms.id && ms.id.toLowerCase() === es.id?.toLowerCase()) ||
+          (ms.slug && ms.slug.toLowerCase() === es.slug?.toLowerCase())
+      );
+      if (!alreadyIncluded && es.name && es.slug) {
+        mergedSubs.push({
+          id: es.id || es.slug,
+          slug: es.slug,
+          name: es.name,
+          urduName: es.urduName || "",
+          description: es.description || "",
+          image: es.image || "",
+          itemCount: es.itemCount || 0,
+        });
+      }
+    });
+
+    const categoryPayload: Record<string, any> = {
+      slug: cat.slug,
+      name: cat.name,
+      urduName: cat.urduName || existingData.urduName || "",
+      description: cat.description || existingData.description || "",
+      image: cat.image || existingData.image || "",
+      itemCount: existingData.itemCount ?? (cat.itemCount || 0),
+      subcategories: mergedSubs,
+      updatedAt: serverTimestamp(),
+    };
+
+    if (!existing) {
+      categoryPayload.createdAt = serverTimestamp();
+    }
+
+    await setDoc(doc(db, "categories", docId), categoryPayload, { merge: true });
+
+    if (existing) {
+      updated++;
+    } else {
+      added++;
+    }
+  }
+
+  return { added, updated, total: masterList.length };
 }
 
 // ─────────────────────────────────────────────

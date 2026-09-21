@@ -96,10 +96,10 @@ export interface Category {
   id: string;
   slug: string;
   name: string;
-  urduName: string;
-  description: string;
-  image: string;
-  itemCount: number;
+  urduName?: string;
+  description?: string;
+  image?: string;
+  itemCount?: number;
   subcategories?: SubCategory[];
 }
 
