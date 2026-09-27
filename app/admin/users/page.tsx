@@ -16,9 +16,7 @@ import {
   ShoppingBag,
   X,
   RefreshCw,
-  Monitor,
   Globe,
-  Link2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -38,16 +36,6 @@ const formatDate = (ts: any) =>
     : "—";
 
 const money = (n: number) => `Rs. ${(n || 0).toLocaleString("en-PK")}`;
-
-/** Referrers come straight from a request header, so never trust them as URLs. */
-function hostOf(referrer?: string) {
-  if (!referrer) return null;
-  try {
-    return new URL(referrer).hostname.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
-}
 
 export default function UsersPage() {
   const [users, setUsers] = useState<TrackedUser[]>([]);
@@ -99,10 +87,6 @@ export default function UsersPage() {
         (u.phone || "").toLowerCase().includes(q) ||
         (u.ip || "").toLowerCase().includes(q) ||
         (u.visitorId || "").toLowerCase().includes(q) ||
-        (u.device || "").toLowerCase().includes(q) ||
-        (u.browser || "").toLowerCase().includes(q) ||
-        (u.os || "").toLowerCase().includes(q) ||
-        (u.referrer || "").toLowerCase().includes(q) ||
         (u.uid || "").toLowerCase().includes(q)
       );
     });
@@ -291,7 +275,7 @@ export default function UsersPage() {
           />
           <input
             className="input"
-            placeholder="Search by name, email, phone, IP, device or visitor ID..."
+            placeholder="Search by name, email, phone, IP or visitor ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ paddingLeft: 38 }}
@@ -357,8 +341,6 @@ export default function UsersPage() {
                 <tr>
                   <th>Visitor</th>
                   <th>Status</th>
-                  <th>Source</th>
-                  <th>Device</th>
                   <th>Orders</th>
                   <th>Last Seen</th>
                   <th>Actions</th>
@@ -377,6 +359,9 @@ export default function UsersPage() {
                           IP {u.ip}
                         </p>
                       )}
+                      <p style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 2 }}>
+                        {u.visitCount || 0} visit{(u.visitCount || 0) === 1 ? "" : "s"}
+                      </p>
                     </td>
                     <td>
                       {u.blocked ? (
@@ -398,42 +383,6 @@ export default function UsersPage() {
                           {u.blockReason}
                         </p>
                       )}
-                    </td>
-                    <td>
-                      {hostOf(u.referrer) ? (
-                        <a
-                          href={u.referrer}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: "var(--accent)",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 4,
-                            fontSize: "0.8rem",
-                            wordBreak: "break-all",
-                          }}
-                        >
-                          <Link2 size={12} />
-                          {hostOf(u.referrer)}
-                        </a>
-                      ) : (
-                        <span style={{ color: "var(--text-muted)" }}>
-                          {u.referrer ? u.referrer.slice(0, 28) : "Direct"}
-                        </span>
-                      )}
-                      <p style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 2 }}>
-                        {u.visitCount || 0} visit{(u.visitCount || 0) === 1 ? "" : "s"}
-                      </p>
-                    </td>
-                    <td>
-                      <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.82rem" }}>
-                        <Monitor size={13} color="var(--text-muted)" />
-                        {u.device || "Unknown"}
-                      </p>
-                      <p style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: 2 }}>
-                        {[u.browser, u.os].filter(Boolean).join(" · ") || "—"}
-                      </p>
                     </td>
                     <td>
                       <p style={{ fontWeight: 700 }}>{u.orderCount || 0}</p>
