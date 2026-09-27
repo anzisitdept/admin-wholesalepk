@@ -4,7 +4,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import {
   LayoutDashboard, Package, ShoppingCart, Star,
-  FileImage, Settings, LogOut, ChevronLeft, ChevronRight, Store, X
+  FileImage, Settings, LogOut, ChevronLeft, ChevronRight, Store, X, Users
 } from "lucide-react";
 
 const NAV = [
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/content", label: "Content", icon: FileImage },
+  { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

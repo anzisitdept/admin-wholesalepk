@@ -129,6 +129,9 @@ export interface Order {
   totalAmount: number;
   paymentMethod: string;
   orderStatus: OrderStatus;
+  /** Set by the storefront server so an order can be traced back to a visitor. */
+  visitorId?: string;
+  ip?: string;
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -196,5 +199,46 @@ export interface StoreSettings {
   freeShippingThreshold: number;
   shippingFee: number;
   [key: string]: any;
+}
+
+/**
+ * A visitor record written by the storefront's /api/track endpoint. Every
+ * person who loads the site - guest or signed in - has exactly one document
+ * in the `users` collection, keyed by their visitor id (or their Auth uid
+ * once they sign in). This is what the /admin/users screen manages.
+ */
+export interface TrackedUser {
+  /** Firestore document id. Equals `visitorId`, or the Auth uid once signed in. */
+  id: string;
+  visitorId: string;
+  deviceId?: string;
+  uid?: string;
+  isGuest: boolean;
+  isRegistered: boolean;
+  email?: string;
+  phone?: string;
+  displayName?: string;
+  photoURL?: string;
+  role?: string;
+  ip?: string;
+  userAgent?: string;
+  device?: string;
+  browser?: string;
+  os?: string;
+  country?: string;
+  referrer?: string;
+  createdAt?: any;
+  firstSeen?: any;
+  lastSeen?: any;
+  visitCount: number;
+  orderCount: number;
+  totalSpent: number;
+  orderIds?: string[];
+  blocked: boolean;
+  blockReason?: string;
+  blockedAt?: any;
+  lastOrderAt?: any;
+  lastLogin?: any;
+  authProvider?: string;
 }
 

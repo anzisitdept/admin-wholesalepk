@@ -33,6 +33,7 @@ import type {
   StoreSettings,
   OrderStatus,
   ReviewStatus,
+  TrackedUser,
 } from "@/types/admin";
 
 // ─────────────────────────────────────────────
@@ -393,4 +394,84 @@ export async function getDashboardStats() {
     pendingReviews: reviewsSnap.size,
     pendingOrders,
   };
+}
+
+// ─────────────────────────────────────────────
+// TRACKED USERS
+// ─────────────────────────────────────────────
+/**
+ * Every visitor to the storefront (guest or signed in) has one document in
+ * `users`, written by the site server. Live subscription so blocking someone
+ * updates the screen immediately.
+ *
+ * Deliberately NOT ordered by `lastSeen` in the query: Firestore drops any
+ * document missing the orderBy field entirely, which would silently hide
+ * accounts created before tracking existed. On an admin screen that must show
+ * every record, a hidden row is worse than no sort, so we sort in memory and
+ * push undated records to the bottom instead.
+ */
+export function subscribeUsers(callback: (users: TrackedUser[]) => void) {
+  return onSnapshot(
+    collection(db, "users"),
+    (snap) => {
+      const users = snap.docs.map((d) => ({ id: d.id, ...d.data() } as TrackedUser));
+      users.sort((a, b) => {
+        const at = a.lastSeen?.toMillis?.() ?? a.lastSeen?.toDate?.().getTime() ?? 0;
+        const bt = b.lastSeen?.toMillis?.() ?? b.lastSeen?.toDate?.().getTime() ?? 0;
+        return bt - at;
+      });
+      callback(users);
+    },
+    // A rules denial should show an empty list rather than hanging on the
+    // loading spinner forever.
+    (err) => {
+      console.error("subscribeUsers failed:", err);
+      callback([]);
+    }
+  );
+}
+
+export async function getUser(id: string): Promise<TrackedUser | null> {
+  const snap = await getDoc(doc(db, "users", id));
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as TrackedUser) : null;
+}
+
+/**
+ * Blocks or unblocks a visitor. This is the switch the storefront's
+ * POST /api/orders reads, so a blocked visitor is refused at checkout.
+ */
+export async function setUserBlocked(
+  id: string,
+  blocked: boolean,
+  reason?: string
+): Promise<void> {
+  await updateDoc(doc(db, "users", id), {
+    blocked,
+    blockReason: blocked ? (reason || "Blocked by admin") : "",
+    blockedAt: blocked ? serverTimestamp() : null,
+  });
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await deleteDoc(doc(db, "users", id));
+}
+
+/**
+ * Order history for one visitor, newest first.
+ *
+ * Sorted in memory rather than with orderBy: a `where` on one field plus an
+ * `orderBy` on another needs a Firestore composite index, and this query
+ * would fail at runtime with FAILED_PRECONDITION until one is created.
+ */
+export async function getUserOrders(visitorId: string): Promise<Order[]> {
+  const snap = await getDocs(
+    query(collection(db, "orders"), where("visitorId", "==", visitorId))
+  );
+  const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+  orders.sort((a, b) => {
+    const at = a.createdAt?.toMillis?.() ?? a.createdAt?.toDate?.().getTime() ?? 0;
+    const bt = b.createdAt?.toMillis?.() ?? b.createdAt?.toDate?.().getTime() ?? 0;
+    return bt - at;
+  });
+  return orders;
 }
